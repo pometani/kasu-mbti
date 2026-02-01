@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カスMBTI</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* タイトル */
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* プログレスバー */
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            height: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #3498db;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 質問文 */
+        #question-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 50px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ボタン配置 */
+        .options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4等分 */
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 20px 5px;
+            border: 2px solid #e0e0e0; /* 枠線はグレーで統一 */
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            background: white; /* 背景は全て白 */
+        }
+
+            .option-btn:hover {
+                transform: translateY(-2px);
+                background-color: #fafafa; /* ホバー時はほんの少しグレーに */
+            }
+
+            .option-btn:active {
+                transform: scale(0.98);
+            }
+
+
+        /* 全くそう思わない（左端）：青 */
+        .btn-disagree-strong {
+            border-top: 5px solid #3498db;
+        }
+
+            .btn-disagree-strong:hover {
+                border-top-color: #2980b9;
+                color: #2980b9;
+            }
+
+        /* どちらかと言えばそう思わない（左中）：薄い青 */
+        .btn-disagree-weak {
+            border-top: 5px solid #85c1e9;
+        }
+
+            .btn-disagree-weak:hover {
+                border-top-color: #5dade2;
+                color: #5dade2;
+            }
+
+        /* どちらかと言えばそう思う（右中）：薄い赤 */
+        .btn-agree-weak {
+            border-top: 5px solid #f1948a;
+        }
+
+            .btn-agree-weak:hover {
+                border-top-color: #ec7063;
+                color: #ec7063;
+            }
+
+        /* 非常にそう思う（右端）：赤 */
+        .btn-agree-strong {
+            border-top: 5px solid #e74c3c;
+        }
+
+            .btn-agree-strong:hover {
+                border-top-color: #c0392b;
+                color: #c0392b;
+            }
+
+
+        /* 結果画面 */
+        .result-header {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .result-main {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #2c3e50;
+            margin: 10px 0 20px 0;
+            line-height: 1.3;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+
+        .result-sub {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 30px;
+        }
+
+        .result-desc {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 40px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            text-align: left;
+            background: #fff;
+            padding: 0 20px;
+        }
+
+        .share-btn {
+            display: inline-block;
+            background-color: #000;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: opacity 0.2s;
+        }
+
+            .share-btn:hover {
+                opacity: 0.8;
+            }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .options {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .result-main {
+                font-size: 1.5rem;
+                white-space: normal;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="quiz-container">
+        <h1>カスMBTI</h1>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div id="question-text">読み込み中...</div>
+
+        <div class="options">
+            <button class="option-btn btn-disagree-strong" onclick="handleAnswer(-2)">全く<br>そう思わない</button>
+            <button class="option-btn btn-disagree-weak" onclick="handleAnswer(-1)">どちらかと言えば<br>そう思わない</button>
+            <button class="option-btn btn-agree-weak" onclick="handleAnswer(1)">どちらかと言えば<br>そう思う</button>
+            <button class="option-btn btn-agree-strong" onclick="handleAnswer(2)">非常に<br>そう思う</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="result-container">
+        <div class="result-header">あなたの診断結果</div>
+
+        <div class="result-main" id="result-components"></div>
+        <div class="result-sub" id="result-title"></div>
+        <div class="result-desc" id="result-description"></div>
+
+        <a href="#" class="share-btn" id="twitter-share" target="_blank">𝕏 で結果をシェア</a>
+        <br><br>
+        <button onclick="location.reload()" style="background:none; border:none; color:#999; cursor:pointer; text-decoration:underline;">もう一度診断する</button>
+    </div>
+
+    <script>
+        // ▼ 公開用URL ▼
+        const appUrl = "http://your-site-url.com";
+
+        // 質問リスト
+        // direction: 1  -> 「そう思う」でポジティブ加点（熱血・ユーモア・デリカシー・ギバー）
+        // direction: -1 -> 「そう思う」でネガティブ加点（冷笑・厳格・ノンデリ・テイカー）
+        const questions = [
+            // --- E軸: 熱血 vs 冷笑 ---
+            // 熱血側(+1)
+            { text: "物語や音楽で感動して、泣くことが多い。", axis: "E", direction: 1 },
+            { text: "努力は評価されるべきで、それを笑う人を見ると嫌な気持ちになる。", axis: "E", direction: 1 },
+            // 冷笑側(-1)
+            { text: "MBTIを根拠に自分や他人について語っている人を見ると、正直おもしろい。", axis: "E", direction: -1 },
+            { text: "自分より劣っている人が努力していると、気持ちよく感じる。", axis: "E", direction: -1 },
+
+            // --- H軸: ユーモア vs 厳格 ---
+            // ユーモア側(+1)
+            { text: "面白いことを考えて、周囲に話したり実行したい。", axis: "H", direction: 1 },
+            { text: "場が盛り上がるなら、嘘をついたり話を盛ったりしても許されると思う。", axis: "H", direction: 1 },
+            // 厳格側(-1)
+            { text: "周りの人が笑っている発言の面白さが、あまり理解できないことがある。", axis: "H", direction: -1 },
+            { text: "自分はあまりウケ狙いの発言をしないが、他者の発言が面白いかどうかはよく評価している。", axis: "H", direction: -1 },
+
+            // --- D軸: 繊細(デリカシー) vs 無神経 ---
+            // デリカシー側(+1)
+            { text: "メールを送った後、「失礼な表現はなかったか」と何度も読み返して不安になる。", axis: "D", direction: 1 },
+            { text: "人のスマホ画面が視界に入ったとき、できるだけ見ないようにする。", axis: "D", direction: 1 },
+            // 無神経側(-1)
+            { text: "「太った？」や「恋人と別れた？」など、気になったことは本人に直接聞くべきだ。", axis: "D", direction: -1 },
+            { text: "公共の場でカップルが喧嘩していると、聞き耳を立てて内容を確認したくなる。", axis: "D", direction: -1 },
+
+            // --- G軸: ギバー(奉仕) vs テイカー(搾取) ---
+            // ギバー側(+1)
+            { text: "道にゴミが落ちていると、誰が見ていなくても拾いたいと思う。", axis: "G", direction: 1 },
+            { text: "自分が損をしてでも、他人が喜んでくれるならそれでいい。", axis: "G", direction: 1 },
+            // テイカー側(-1)
+            { text: "友人や恋人は自分のために精一杯尽くしてほしい。", axis: "G", direction: -1 },
+            { text: "「誰かやっておいて」という空気が流れたら、絶対に目を合わせず気配を消す。", axis: "G", direction: -1 }
+        ];
+
+        const typeNames = {
+            E: "熱血", C: "冷笑",
+            H: "ユーモア", S: "厳格",
+            D: "デリカシー", N: "ノンデリ",
+            G: "ギバー", T: "テイカー"
+        };
+
+        const results = {
+            // 全てポジティブ
+            "EHDG": { title: "歩くパワースポット", desc: "おめでとうございます。あなたは熱いハートとユーモアを持ち、気配りもできて他人に尽くせる聖人君子です。\nこの診断における唯一の「良心」です。どうかそのままでいてください。" },
+
+            // 1つだけネガティブ
+            "EHDT": { title: "声デカいだけの飲み会モンスター", desc: "明るくて面白い人気者ですが、ちゃっかり奢られようとするテイカー気質があります。「金は出さないが口は出す」タイプ。" },
+            "EHNG": { title: "無神経な熱血漢", desc: "情に厚く親切ですが、デリカシーが壊滅しています。良かれと思って余計なことを言い、相手を傷つける「ありがた迷惑」の達人。" },
+            "ESDG": { title: "生真面目なパシリ", desc: "真面目で気配りも完璧ですが、面白みがないため都合よく使われがち。もう少しワガママになってもいいのでは？" },
+            "CHDG": { title: "斜に構えたピエロ", desc: "皮肉屋だけど実はイイ奴。素直になれず、茶化すことでしかコミュニケーションが取れない可哀想なタイプ。" },
+
+            // 2つポジティブ・2つネガティブ
+            "EHNT": { title: "歩く騒音公害", desc: "元気で面白いですが、デリカシーもなければ金も出しません。あなたの周りだけ治安が悪いです。" },
+            "ESDT": { title: "計算高い優等生", desc: "表向きは真面目で低姿勢ですが、損得勘定でしか動いていません。絶対に尻尾を出さない策士。" },
+            "ESNG": { title: "空気読めない委員長", desc: "正論で殴ってくる上に、頼んでもないのに手伝おうとします。善意100%の行動が周囲を疲弊させています。" },
+            "CSDG": { title: "気配り自滅陰キャ", desc: "誰にも嫌われたくないあまり、存在感が消えています。冷めているようで、実は内心ビクビクしているだけかも。" },
+            "CHDT": { title: "口だけの批評家", desc: "安全圏から茶化すだけで、自分では何もしません。他人の失敗は蜜の味。" },
+            "CHNG": { title: "サイコパス（笑）予備軍", desc: "人の不幸を笑い、無神経な発言を繰り返しますが、変なところで親切心を見せる謎の人物。" },
+
+            // かなりネガティブ
+            "ESNT": { title: "冷徹な独裁者", desc: "ルールは他人に守らせますが、自分は守りません。成果を求める姿勢だけは一人前。" },
+            "CSDT": { title: "省エネ主義の事なかれ主義", desc: "「自分は関係ないんで」が口癖。責任逃れのプロフェッショナル。決定打が無いからまだ嫌われていないだけ" },
+            "CSNG": { title: "AI以下のコミュ力", desc: "悪気はないのですが、人の心がない発言を繰り返します。しかも面白くない。感情パラメータの実装を忘れて生まれてきたようです。" },
+            "CHNT": { title: "ネット弁慶の煽り魔", desc: "リアルでは大人しいですが、心の中では全員を見下しています。スポーツとか初めてみては？" },
+
+            // 全てネガティブ
+            "CSNT": { title: "虚無", desc: "熱意なし、笑いなし、デリカシーなし、奉仕精神なし。逆に何が楽しくて生きているのでしょう。" }
+        };
+
+        let currentQuestionIndex = 0;
+        let scores = { E: 0, H: 0, D: 0, G: 0 };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        shuffle(questions);
+        showQuestion();
+
+        function showQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById('question-text').innerText = `Q${currentQuestionIndex + 1}. ${q.text}`;
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        function handleAnswer(value) {
+            const q = questions[currentQuestionIndex];
+            scores[q.axis] += value * q.direction;
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.remove('hidden');
+
+            const typeE = scores.E >= 0 ? 'E' : 'C';
+            const typeH = scores.H >= 0 ? 'H' : 'S';
+            const typeD = scores.D >= 0 ? 'D' : 'N';
+            const typeG = scores.G >= 0 ? 'G' : 'T';
+
+            const componentText = `${typeNames[typeE]}・${typeNames[typeH]}・${typeNames[typeD]}・${typeNames[typeG]}`;
+            const resultKey = typeE + typeH + typeD + typeG;
+            const resultData = results[resultKey] || { title: "未知の生命体", desc: "判定不能です。" };
+
+            document.getElementById('result-components').innerText = componentText;
+            document.getElementById('result-title').innerText = `（${resultData.title}）`;
+            document.getElementById('result-description').innerText = resultData.desc;
+
+            const shareText = `私の性質は【${componentText}】\n（${resultData.title}）でした。\n\n${resultData.desc}\n\n#カスMBTI`;
+            const targetUrl = appUrl.startsWith("http") ? appUrl : window.location.href;
+
+            const twitterLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(targetUrl)}`;
+            document.getElementById('twitter-share').href = twitterLink;
+        }
+    </script>
+
+</body>
+</html>
