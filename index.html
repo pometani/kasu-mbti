@@ -292,7 +292,7 @@
 
         const results = {
             // 全てポジティブ
-            "EHDG": { title: "歩くパワースポット", desc: "おめでとうございます。あなたは熱いハートとユーモアを持ち、気配りもできて他人に尽くせる聖人君子です。\nこの診断における唯一の「良心」です。どうかそのままでいてください。" },
+            "EHDG": { title: "歩くパワースポット", desc: "おめでとうございます。あなたは熱いハートとユーモアを持ち、気配りもできて他人に尽くせる聖人君子です。\nどうかそのままでいてください。" },
 
             // 1つだけネガティブ
             "EHDT": { title: "声デカいだけの飲み会モンスター", desc: "明るくて面白い人気者ですが、ちゃっかり奢られようとするテイカー気質があります。「金は出さないが口は出す」タイプ。" },
@@ -354,10 +354,10 @@
             document.getElementById('quiz-container').classList.add('hidden');
             document.getElementById('result-container').classList.remove('hidden');
 
-            const typeE = scores.E >= 0 ? 'E' : 'C';
-            const typeH = scores.H >= 0 ? 'H' : 'S';
-            const typeD = scores.D >= 0 ? 'D' : 'N';
-            const typeG = scores.G >= 0 ? 'G' : 'T';
+            const typeE = scores.E > 0 ? 'E' : 'C';
+            const typeH = scores.H > 0 ? 'H' : 'S';
+            const typeD = scores.D > 0 ? 'D' : 'N';
+            const typeG = scores.G > 0 ? 'G' : 'T';
 
             const componentText = `${typeNames[typeE]}・${typeNames[typeH]}・${typeNames[typeD]}・${typeNames[typeG]}`;
             const resultKey = typeE + typeH + typeD + typeG;
@@ -378,4 +378,5 @@
 </body>
 
 </html>
+
 
